@@ -6,6 +6,8 @@ import cookieParser from 'cookie-parser';
 import express from 'express'
 
 const app = express()
+app.use(express.static("public"))
+app.use(cookieParser())
 
 app.get('/', (req, res) => res.send('Hello you!'))
 
@@ -46,7 +48,7 @@ app.get("/api/bugs/:id", (req, res) => {
 })
 
 //Remove Bug
-app.get('/api/bugs/remove/:id', (req, res) => {
+app.get('/api/bugs/:id/remove', (req, res) => {
     const bugId = req.params.id
     bugService.remove(bugId)
         .then(() => res.send(bugId))
