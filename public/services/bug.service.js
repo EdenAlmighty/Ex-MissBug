@@ -14,7 +14,6 @@ export const bugService = {
     remove,
 }
 
-
 function query(filterBy = getDefaultFilter()) {
     return axios.get(BASE_URL)
         .then(res => res.data)
@@ -29,6 +28,7 @@ function query(filterBy = getDefaultFilter()) {
             return bugs
         })
 }
+
 function getById(bugId) {
     return axios.get(BASE_URL + bugId)
         .then(res => res.data)

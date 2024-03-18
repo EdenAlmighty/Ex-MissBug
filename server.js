@@ -9,7 +9,31 @@ const app = express()
 app.use(express.static("public"))
 app.use(cookieParser())
 
-app.get('/', (req, res) => res.send('Hello you!'))
+app.get('/api/bugs/:id', (req, res) => {
+    let arrVisited = req.cookies.arrVisited ? JSON.parse(req.cookies.arrVisited) : []
+    const bugId = req.params.id
+    
+    let bugCount = req.cookies.bugCount ? parseInt(req.cookies.bugCount) : 0
+    res.cookie('bugCount', ++bugCount, { maxAge: 7000 })
+
+    console.log('bugCount:', bugCount)
+    if (bugCount > 3) {
+        return res.status(401).send('Wait for a bit')
+    }
+
+    bugService.getById(bugId)
+        .then(bug => {
+            //! This doesn't work
+            if (!arrVisited.includes(bugId)) {
+                arrVisited.push(bugId)
+                res.send(bug)
+            }
+        })
+        .catch(err => {
+            loggerService.error(err)
+            res.status(400).send('Cannot get bug')
+        })
+})
 
 // Get bugs (READ)
 app.get('/api/bugs', (req, res) => {
@@ -58,21 +82,6 @@ app.get('/api/bugs/:id/remove', (req, res) => {
         })
 })
 // console.log(bugService.bugs); 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
