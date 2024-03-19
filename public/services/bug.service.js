@@ -3,7 +3,7 @@ import { storageService } from './async-storage.service.js'
 import { utilService } from './util.service.js'
 
 const STORAGE_KEY = 'bugDB'
-const BASE_URL = '/api/bugs/'
+const BASE_URL = '/api/bug/'
 
 _createBugs()
 
@@ -12,18 +12,21 @@ export const bugService = {
     getById,
     save,
     remove,
+    getDefaultFilter,
+    getEmptyBug
 }
 
-function query(filterBy = getDefaultFilter()) {
+function query(filterBy = {}) {
     return axios.get(BASE_URL)
         .then(res => res.data)
         .then(bugs => {
-            if (filterBy.title) {
-                const regex = new RegExp(filterBy.title, 'i')
-                bugs = bugs.filter(bug => regex.test(bug.title))
+            if (filterBy.txt) {
+                const regExp = new RegExp(filterBy.txt, 'i')
+                bugs = bugs.filter(bug => regExp.test(bug.title) || regExp.test(bug.description))
             }
             if (filterBy.severity) {
-                bugs = bugs.filter(bug => regex.test(bug.severity))
+                // const regExp = new RegExp(filterBy.severity, 'i')
+                bugs = bugs.filter(bug => bug.severity >= filterBy.severity)
             }
             return bugs
         })
@@ -42,22 +45,39 @@ function remove(bugId) {
         .then(res => res.data)
 }
 
+function getEmptyBug() {
+    return { title: '', description: '', severity: 5 }
+}
+
 function getDefaultFilter() {
-    return { title: '', severity: 0 }
+    return { txt: '', severity: '' }
 }
 
+
+//* Easier way to destructure query params
 function save(bug) {
-    console.log(bug)
     const url = BASE_URL + 'save'
-    let queryParams = `?title=${bug.title}&severity=${bug.severity}&description=${bug.description}`
-    if(bug._id) {
-        queryParams += `&_id=${bug._id}`
-    }
-    return axios.get(url + queryParams)
-    .then(res => res.data)
+    // Destructure the query params
+    const { title, description, severity } = bug
+
+    // Create object with destructured data
+    const queryParams = { title, description, severity }
+
+    if (bug._id) queryParams._id = bug._id
+
+    return axios.get(url, { params: queryParams })
+    // .then(res => res.data)
 }
 
-
+//! LONG WAY
+// function save(bug) {
+//     console.log(bug)
+//     const url = BASE_URL + 'save'
+//     let queryParams = `?title=${bug.title}&severity=${bug.severity}&description=${bug.description}`
+//     if (bug._id) queryParams += `&_id=${bug._id}`
+//     return axios.get(url + queryParams)
+//         // .then(res => res.data)
+// }
 
 
 function _createBugs() {

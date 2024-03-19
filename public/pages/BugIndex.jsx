@@ -1,18 +1,30 @@
 import { bugService } from '../services/bug.service.js'
 import { showSuccessMsg, showErrorMsg } from '../services/event-bus.service.js'
 import { BugList } from '../cmps/BugList.jsx'
+import { BugFilter } from '../cmps/BugFilter.jsx'
+
+const { Link, useSearchParams } = ReactRouterDOM
 
 const { useState, useEffect } = React
 
 export function BugIndex() {
     const [bugs, setBugs] = useState(null)
+    // const [filterBy, setFilterBy] = useState(bugService.getFilterFromParams(searchParams) || {})
+    const [filterBy, setFilterBy] = useState(bugService.getDefaultFilter())
+
+    // const [searchParams, setSearchParams] = useSearchParams()
+
 
     useEffect(() => {
+        // setSearchParams(filterBy)
         loadBugs()
-    }, [])
+    }, [filterBy])
 
     function loadBugs() {
-        bugService.query().then(setBugs)
+        // bugService.query().then(setBugs)
+        // bugService.query(filterBy).then(setBugs)
+        bugService.query(filterBy).then((bugs) => setBugs(bugs))
+
     }
 
     function onRemoveBug(bugId) {
@@ -29,6 +41,10 @@ export function BugIndex() {
                 showErrorMsg('Cannot remove bug')
             })
     }
+
+    function onSetFilter(filterBy) {
+        setFilterBy((prevFilterBy) => ({...prevFilterBy, ...filterBy}))
+      }
 
     function onAddBug() {
         const bug = {
@@ -52,7 +68,7 @@ export function BugIndex() {
     function onEditBug(bug) {
         const severity = +prompt('New severity?')
         const bugToSave = { ...bug, severity }
-        bugService
+            // bugService
             .save(bugToSave)
             .then((savedBug) => {
                 console.log('Updated Bug:', savedBug)
@@ -68,9 +84,16 @@ export function BugIndex() {
             })
     }
 
+    const { txt, severity } = filterBy
+    
     return (
         <main>
             <h3>Bugs App</h3>
+            {filterBy && <BugFilter onSetFilter={onSetFilter} filterBy={filterBy} />}
+            {/* <BugFilter
+                onSetFilter={onSetFilter}
+                filterBy={{ txt, severity }} /> */}
+
             <main>
                 <button onClick={onAddBug}>Add Bug ⛐</button>
                 <BugList bugs={bugs} onRemoveBug={onRemoveBug} onEditBug={onEditBug} />

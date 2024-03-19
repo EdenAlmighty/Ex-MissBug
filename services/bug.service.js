@@ -1,6 +1,9 @@
-import fs from 'fs'
 
-import { utilService } from "./utils.service.js";
+import fs from 'fs'
+import { utilService } from './util.service.js'
+import { loggerService } from './logger.service.js'
+// import { pdfService } from './pdf.service.js'
+
 export const bugService = {
     query,
     getById,
@@ -8,49 +11,49 @@ export const bugService = {
     save
 }
 
-const bugs = utilService.readJsonFile('./data/bugs.json')
+const bugs = utilService.readJsonFile('data/bugs.json')
 
 function query() {
     return Promise.resolve(bugs)
 }
 
-function getById(id) {
-    const bug = bugs.find(bug => bug._id === id)
-    if (!bug) return Promise.reject('bug does not exist!')
+function getById(bugId) {
+    const bug = bugs.find(bug => bug._id === bugId)
+    // pdfService.buildAnimalsPDF(bugs) //pdf bonus
+    if (!bug) return Promise.reject('Bug not found!')
     return Promise.resolve(bug)
 }
 
-function remove(id) {
-    const bugIdx = bugs.findIndex(bug => bug._id === id)
-    bugs.splice(bugIdx, 1)
+function remove(bugId) {
+    // bugs = bugs.filter(bug => bug._id !== bugId)
+    const idx = bugs.findIndex(bug => bug._id === bugId)
+    bugs.splice(idx, 1)
     return _saveBugsToFile()
 }
 
 function save(bug) {
     if (bug._id) {
-        const bugIdx = bugs.findIndex(_bug => _bug._id === bug._id)
-        bugs[bugIdx] = bug
+        const idx = bugs.findIndex(currBug => currBug._id === bug._id)
+        bugs[idx] = { ...bugs[idx], ...bug }
     } else {
-        // bug.title = utilService.makeLorem(2)
         bug._id = utilService.makeId()
-        // bug.description = utilService.makeLorem()
         bug.createdAt = Date.now()
-        // bug.severity = utilService.getRandomIntInclusive(1,5)
         bugs.unshift(bug)
     }
     return _saveBugsToFile().then(() => bug)
 }
 
-
 function _saveBugsToFile() {
     return new Promise((resolve, reject) => {
-        const data = JSON.stringify(bugs, null, 4)
-        fs.writeFile('data/bugs.json', data, (err) => {
+        const data = JSON.stringify(bugs, null, 2)
+        fs.writeFile('data/bug.json', data, (err) => {
             if (err) {
-                console.log(err)
-                return reject(err)
+                loggerService.error('Cannot write to bugs file', err)
+                return reject(err);
             }
+            console.log('The file was saved!');
             resolve()
-        })
+        });
     })
 }
+
