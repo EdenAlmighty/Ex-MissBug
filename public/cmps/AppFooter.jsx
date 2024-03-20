@@ -1,4 +1,3 @@
-import { showSuccessMsg } from '../services/event-bus.service.js'
 const { useEffect } = React
 
 export function AppFooter () {
@@ -14,5 +13,4 @@ export function AppFooter () {
             </p>
         </footer>
     )
-
 }

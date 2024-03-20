@@ -10,6 +10,8 @@ import { AboutUs } from './pages/AboutUs.jsx'
 import { Team } from './cmps/Team.jsx'
 import { Vision } from './cmps/Vision.jsx'
 import { BugEdit } from './pages/BugEdit.jsx'
+import { UserDetails } from './pages/UserDetails.jsx'
+import { UserList } from './pages/UserList.jsx'
 // import { BugFilter } from './cmps/BugFilter.jsx'
 
 export function App() {
@@ -29,6 +31,8 @@ export function App() {
                         <Route path="/bug/:bugId" element={<BugDetails />} />
                         <Route path="/bug/edit/" element={<BugEdit />} />
                         <Route path="/bug/edit/:bugId" element={<BugEdit />} />
+                        <Route path="/user/:userId" element={<UserDetails />} />
+                        <Route path="/user/admin" element={<UserList />} />
                     </Routes>
                 </main>
                 <AppFooter />

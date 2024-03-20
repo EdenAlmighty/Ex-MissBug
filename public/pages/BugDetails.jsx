@@ -1,9 +1,7 @@
 const { useState, useEffect } = React
 const { Link, useParams, useNavigate } = ReactRouterDOM
-// const { useNavigate } = Reac
 import { bugService } from '../services/bug.service.js'
 import { showErrorMsg } from '../services/event-bus.service.js'
-
 
 export function BugDetails() {
     const navigate = useNavigate()
@@ -17,7 +15,7 @@ export function BugDetails() {
                 setBug(bug)
             })
             .catch((err) => {
-                // showErrorMsg('Cannot load bug', err)
+                showErrorMsg('Cannot load bug', err)
                 console.log('Cannot load bug', err)
                 navigate('/bug')
             })
@@ -30,8 +28,8 @@ export function BugDetails() {
         <h4>{bug.title}</h4>
         <p>Severity: <span>{bug.severity}</span></p>
         <pre>Description: <span>{bug.description}</span></pre>
+        {bug.labels && bug.labels.length > 0 && <p>Labels: <span>{bug.labels.join(', ')}</span></p>}
         <Link to="/bug">Back to List</Link>
     </section>
-
 }
 

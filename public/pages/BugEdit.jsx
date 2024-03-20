@@ -1,22 +1,24 @@
-const {useEffect, useState} = React
-const {useParams, useNavigate} = ReactRouterDOM
+const { useEffect, useState, useRef } = React
+const { useParams, useNavigate } = ReactRouterDOM
 
-import {bugService} from '../services/bug.service.js'
-import {showErrorMsg} from '../services/event-bus.service.js'
+import { bugService } from '../services/bug.service.js'
+import { showSuccessMsg, showErrorMsg } from '../services/event-bus.service.js'
 
 export function BugEdit() {
   const [bugToEdit, setBugToEdit] = useState(bugService.getEmptyBug())
+  const inputRef = useRef()
   const navigate = useNavigate()
-  const {bugId} = useParams()
+  const { bugId } = useParams()
 
   useEffect(() => {
     if (bugId) loadBug()
   }, [])
 
   function loadBug() {
-    bugService
-      .getById(bugId)
-      .then(setBugToEdit)
+    bugService.getById(bugId)
+      .then(bug => {
+        setBugToEdit(bug)
+      })
       .catch((err) => {
         console.log('Had issued in bug edit:', err)
         navigate('/bug')
@@ -24,22 +26,38 @@ export function BugEdit() {
       })
   }
 
-  function handleChange({target}) {
-    const field = target.name
-    const value = target.type === 'number' ? +target.value || '' : target.value
-    setBugToEdit((prevBug) => ({...prevBug, [field]: value}))
+  function handleChange({ target }) {
+    const field = target.name;
+    let value;
+
+    if (field === "labels") {
+      value = target.value.split(',').map(label => label.trim())
+    } else if (target.type === 'number') {
+      value = +target.value || ''
+    } else {
+      value = target.value
+    }
+
+    setBugToEdit(prevBug => ({ ...prevBug, [field]: value }))
   }
 
   function onSaveBug(ev) {
     console.log('onSaveBug -> ev:', ev)
     ev.preventDefault()
-    bugService.save(bugToEdit).then(() => {
-      navigate('/bug')
-    })
+    bugService.save(bugToEdit)
+      .then(() => {
+        showSuccessMsg('Bug Saved!')
+        navigate('/bug')
+      })
+      .catch(err => {
+        console.error('Failed to save bug:', err)
+        showErrorMsg('Failed to save bug')
+      })
   }
 
-  const {title, description, severity} = bugToEdit
+  if (!bugToEdit) return <div>Loading...</div>
 
+  const { title, description, severity, labels } = bugToEdit
   return (
     <section className="bug-edit">
       <h2>{bugToEdit._id ? 'Edit' : 'Add'} Bug</h2>
@@ -51,6 +69,7 @@ export function BugEdit() {
           value={title}
           type="text"
           name="title"
+          ref={inputRef}
           id="title"
         />
 
@@ -70,6 +89,15 @@ export function BugEdit() {
           type="number"
           name="severity"
           id="severity"
+        />
+
+        <label htmlFor="labels">Labels:</label>
+        <input
+          onChange={handleChange}
+          value={labels.join(", ")} 
+          type="text"
+          name="labels"
+          id="labels"
         />
 
         <button>{bugToEdit._id ? 'Save' : 'Add'}</button>
